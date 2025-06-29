@@ -6,7 +6,7 @@ const navMenu = document.querySelector('.nav-menu');
 const navLinks = document.querySelectorAll('.nav-link');
 const contactForm = document.getElementById('contactForm');
 const formMessage = document.getElementById('formMessage');
-const blogPosts = document.getElementById('blog-posts');
+const blogPostsContainer = document.getElementById('blog-posts');
 
 // ===== MOBILE NAVIGATION =====
 function initMobileNav() {
@@ -99,7 +99,7 @@ function initScrollAnimations() {
     '.about-text',
     '.about-stats',
     '.video-card',
-    '.blog-post',
+    '.blog-post-card', // Ensure this class is targeted
     '.contact-method',
     '.stat-item'
   ];
@@ -198,13 +198,13 @@ function showVideoModal(title, videoId) {
   modal.className = 'video-modal';
 
   // Construct YouTube embed URL
-  const embedUrl = `https://www.youtube.com/watch?v=HgIwppE9yOQ0${videoId}?autoplay=1&rel=0`; // autoplay=1 to start immediately
+  const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`; // Correct YouTube embed format
 
   modal.innerHTML = `
     <div class="video-modal-content">
       <div class="video-modal-header">
         <h3>${title}</h3>
-        <button class="video-modal-close">&times;</button>
+        <button class="video-modal-close">×</button>
       </div>
       <div class="video-modal-body">
         <div class="video-player-container">
@@ -219,7 +219,6 @@ function showVideoModal(title, videoId) {
   `;
 
   // Add modal styles (move this to style.css for cleaner code)
-  // For quick testing, we'll keep it here, but best practice is in CSS file
   const modalStyles = `
     .video-modal {
       position: fixed;
@@ -235,31 +234,31 @@ function showVideoModal(title, videoId) {
       animation: fadeIn 0.3s ease;
     }
     .video-modal-content {
-      background: var(--color-secondary);
+      background: #1a1a1a; /* Dark background for modal */
       border-radius: 12px;
-      max-width: 800px; /* Max width of the modal */
-      width: 90%; /* Responsive width */
+      max-width: 800px;
+      width: 90%;
       max-height: 90%;
       overflow: hidden;
-      border: 1px solid var(--color-border);
-      display: flex; /* Added flex to stack header/body vertically */
-      flex-direction: column; /* Added flex to stack header/body vertically */
+      border: 1px solid #333;
+      display: flex;
+      flex-direction: column;
     }
     .video-modal-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: var(--spacing-md);
-      border-bottom: 1px solid var(--color-border);
+      padding: 1rem;
+      border-bottom: 1px solid #333;
     }
     .video-modal-header h3 {
-      color: var(--color-text-primary);
+      color: #d4af37; /* Gold title */
       margin: 0;
     }
     .video-modal-close {
       background: none;
       border: none;
-      color: var(--color-text-primary);
+      color: #fff;
       font-size: 2rem;
       cursor: pointer;
       padding: 0;
@@ -269,25 +268,23 @@ function showVideoModal(title, videoId) {
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      transition: var(--transition-fast);
+      transition: all 0.3s ease;
     }
     .video-modal-close:hover {
-      background: var(--color-accent-orange);
+      background: #b8941f; /* Darker gold on hover */
     }
     .video-modal-body {
-      /* Removed fixed padding: var(--spacing-lg); as it affects iframe directly */
-      /* Flex grow to take available space */
-      flex-grow: 1; 
-      position: relative; /* For absolute positioning of video-player-container */
-      padding: 0; /* Remove padding from modal body */
+      flex-grow: 1;
+      position: relative;
+      padding: 0;
     }
     .video-player-container {
         position: relative;
-        padding-bottom: 56.25%; /* 16:9 Aspect Ratio (height / width = 9 / 16 = 0.5625) */
+        padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
         height: 0;
         overflow: hidden;
         max-width: 100%;
-        background: black; /* Just in case video loads slowly */
+        background: black;
     }
     .video-player-container iframe {
         position: absolute;
@@ -296,7 +293,6 @@ function showVideoModal(title, videoId) {
         width: 100%;
         height: 100%;
     }
-    /* Removed .video-placeholder styles as it's no longer used */
   `;
 
   // Add styles to head if not already present
@@ -335,44 +331,33 @@ function showVideoModal(title, videoId) {
 function initContactForm() {
   if (contactForm && formMessage) {
     contactForm.addEventListener('submit', function(e) {
-      // You still want client-side validation before sending to Formspree
       const formData = new FormData(contactForm);
       const name = formData.get('name').trim();
       const email = formData.get('email').trim();
       const subject = formData.get('subject');
       const message = formData.get('message').trim();
 
-      // Clear previous messages
       formMessage.className = 'form-message';
       formMessage.textContent = '';
 
-      // Validation (KEEP THIS PART)
       if (!name || !email || !subject || !message) {
         showFormMessage('Please fill in all fields.', 'error');
-        e.preventDefault(); // Prevent submission if validation fails
+        e.preventDefault();
         return;
       }
 
       if (!isValidEmail(email)) {
         showFormMessage('Please enter a valid email address.', 'error');
-        e.preventDefault(); // Prevent submission if validation fails
+        e.preventDefault();
         return;
       }
 
-      // Formspree will handle the submission.
-      // You can show a "Sending..." message here if you want immediate feedback.
       const submitButton = contactForm.querySelector('button[type="submit"]');
       const originalText = submitButton.innerHTML;
       submitButton.innerHTML = '<span>Sending...</span>';
       submitButton.disabled = true;
 
-      // Formspree will handle success/error messages on its own page by default.
-      // For AJAX submission (to stay on the same page), you'd need more JS:
-
-      // OPTIONAL: For AJAX submission (to show success message without redirect)
-      // Add this part if you want to stay on the same page after submission
-      // Make sure your form HTML has method="POST" action="YOUR_FORMSPREE_ENDPOINT"
-      e.preventDefault(); // Prevent default form submission to handle it via JS
+      e.preventDefault();
 
       fetch(contactForm.action, {
           method: contactForm.method,
@@ -407,7 +392,6 @@ function showFormMessage(message, type) {
   formMessage.textContent = message;
   formMessage.className = `form-message ${type}`;
 
-  // Auto-hide success messages after 5 seconds
   if (type === 'success') {
     setTimeout(() => {
       formMessage.textContent = '';
@@ -422,75 +406,150 @@ function isValidEmail(email) {
 }
 
 // ===== BLOG RSS INTEGRATION =====
-function initBlogSection() {
-  // Simulate blog posts loading (in real implementation, this would fetch from Blogger RSS)
-  loadBlogPosts();
+const blogRssFeedUrl = 'https://svakodneva-filozofija.blogspot.com/feeds/posts/default?alt=rss';
+
+// Function to decode HTML entities
+function decodeHtmlEntities(text) {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
 }
 
-function loadBlogPosts() {
-  // Simulate loading delay
-  setTimeout(() => {
-    const mockPosts = [
-      {
-        title: "The Brotherhood of the Road: Sturgis 2024 Reflections",
-        excerpt: "Another year, another incredible journey to the Black Hills. This year's Sturgis rally brought together riders from across the globe, each with their own story to tell...",
-        date: "December 15, 2024",
-        link: "#"
-      },
-      {
-        title: "Capturing Love in Motion: Wedding Videography Tips",
-        excerpt: "After filming over 50 weddings, I've learned that the best moments happen between the planned shots. Here's how I approach wedding videography with a biker's eye for authenticity...",
-        date: "December 10, 2024",
-        link: "#"
-      },
-      {
-        title: "Chrome and Character: The Art of Motorcycle Photography",
-        excerpt: "Every bike has a story, and every rider has a journey. In this post, I share my techniques for capturing the soul of motorcycle culture through the lens...",
-        date: "December 5, 2024",
-        link: "#"
-      },
-      {
-        title: "From Harley to Altar: When Bikers Say 'I Do'",
-        excerpt: "Some of my favorite weddings have been when two riders decide to take the ultimate ride together. These ceremonies blend tradition with rebellion in the most beautiful ways...",
-        date: "November 28, 2024",
-        link: "#"
-      }
-    ];
-
-    displayBlogPosts(mockPosts);
-  }, 1500);
+// New helper function to aggressively clean text from unwanted characters
+function cleanTextContent(text) {
+    if (!text) return '';
+    // Decode HTML entities first
+    text = decodeHtmlEntities(text);
+    // Regex to remove common non-printable ASCII, Unicode control, and zero-width characters
+    // It also specifically targets and removes the BOM (Byte Order Mark) if present.
+    text = text.replace(/[\u0000-\u001F\u007F-\u009F\u00AD\u034F\u061C\u115F\u1160\u17B4\u17B5\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u206A-\u206F\u3164\uFEFF\uFFA0]+/g, '');
+    // Remove any leading/trailing whitespace including non-breaking spaces (trim aggressively)
+    text = text.trim();
+    // Replace multiple spaces with a single space (e.g., from character removal)
+    text = text.replace(/\s\s+/g, ' ');
+    return text;
 }
 
-function displayBlogPosts(posts) {
-  if (!blogPosts) return;
 
-  const postsHTML = posts.map(post => `
-    <article class="blog-post fade-in">
-      <h3 class="blog-post-title">
-        <a href="${post.link}">${post.title}</a>
-      </h3>
-      <div class="blog-post-meta">
-        <time datetime="${post.date}">${post.date}</time>
-      </div>
-      <div class="blog-post-excerpt">
-        ${post.excerpt}
-      </div>
-    </article>
-  `).join('');
+// Function to strip HTML tags from a string
+function stripHtml(html) {
+    // Create a temporary div to parse the HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    // Get text content of the div
+    let text = tempDiv.textContent || tempDiv.innerText || '';
+    // Further clean up after stripping HTML, just in case
+    text = text.replace(/\s+/g, ' '); // Replace multiple spaces with a single space
+    return text.trim();
+}
 
-  blogPosts.innerHTML = postsHTML;
 
-  // Animate new blog posts
-  const newPosts = blogPosts.querySelectorAll('.blog-post');
-  newPosts.forEach((post, index) => {
-    post.style.transitionDelay = `${index * 0.1}s`;
-    setTimeout(() => post.classList.add('visible'), 100);
-  });
+async function fetchRssFeed() {
+    if (!blogPostsContainer || !blogRssFeedUrl) {
+        console.error('Blog posts container or RSS feed URL not set for RSS integration.');
+        blogPostsContainer.innerHTML = '<p>Blog feed is not configured. Please set the RSS feed URL in script.js.</p>';
+        return;
+    }
+
+    blogPostsContainer.innerHTML = `
+        <div class="blog-loading">
+            <div class="loading-spinner"></div>
+            <p>Loading latest stories...</p>
+        </div>
+    `;
+
+    try {
+        const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(blogRssFeedUrl)}`;
+        
+        console.log('Attempting to fetch RSS feed from proxy:', proxyUrl);
+
+        const response = await fetch(proxyUrl);
+        if (!response.ok) {
+            console.error('Network response was not ok:', response.status, response.statusText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+        console.log('RSS Feed Data received:', data);
+
+        if (data.status === 'ok' && data.items && data.items.length > 0) {
+            blogPostsContainer.innerHTML = '';
+
+            data.items.slice(0, 3).forEach(item => {
+                const postElement = document.createElement('div');
+                postElement.classList.add('blog-post-card', 'fade-in');
+
+                // Extract image from content or use placeholder
+                let imageUrl = ''; // Start with an empty string, so no <img> is generated unless a valid image is found
+                const parser = new DOMParser();
+                const contentHtml = item.content || item.description || ''; // Use description if content is empty
+                const doc = parser.parseFromString(contentHtml, 'text/html');
+                const imgElement = doc.querySelector('img');
+
+                if (imgElement && imgElement.src && !imgElement.src.includes('data:image/gif')) { // Exclude tracking gifs
+                    // Try to get a larger image if Blogger provides 'sXXX-c' in URL, e.g., 's1600-c' for large
+                    imageUrl = imgElement.src.replace(/\/s\d+-c\//, '/s1600/'); // Example: replace /s320-c/ with /s1600/
+                    if (!imageUrl.startsWith('http')) { // Ensure it's an absolute URL
+                        // If not absolute, consider it invalid for display
+                        imageUrl = ''; // Don't use a placeholder, just hide the image
+                    }
+                } else {
+                    // Fallback to media:thumbnail or other common RSS image fields if available in item.enclosures
+                    if (item.enclosures && item.enclosures.length > 0) {
+                        const thumbnail = item.enclosures.find(enc => enc.type.startsWith('image/') && !enc.url.includes('data:image/gif') && enc.url.startsWith('http'));
+                        if (thumbnail && thumbnail.url) {
+                            imageUrl = thumbnail.url;
+                        }
+                    }
+                }
+                
+                // === TEXT CLEANING ===
+                // Apply the robust cleanTextContent function
+                const cleanedTitle = cleanTextContent(item.title || '');
+
+                let rawDescription = item.description || item.content || '';
+                // Remove blogger specific elements like <div class="blogger-post-footer">
+                rawDescription = rawDescription.replace(/<div\s+class=["']blogger-post-footer["']>.*?<\/div>/gis, '');
+                // Remove any remaining script tags or style tags
+                rawDescription = rawDescription.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+                rawDescription = rawDescription.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
+                
+                // Apply cleanTextContent to the description after stripping HTML
+                const cleanedDescription = cleanTextContent(stripHtml(rawDescription)).substring(0, 150) + '...';
+
+                // Conditionally render the thumbnail div ONLY if a valid imageUrl was found
+                const thumbnailHtml = imageUrl ? 
+                    `<div class="blog-post-thumbnail">
+                        <img src="${imageUrl}" alt="${cleanedTitle}">
+                    </div>` : '';
+
+                postElement.innerHTML = `
+                    ${thumbnailHtml}
+                    <div class="blog-post-info">
+                        <h3 class="blog-post-title">${cleanedTitle}</h3>
+                        <p class="blog-post-description">${cleanedDescription}</p>
+                        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="read-more-btn">Read More</a>
+                        <div class="blog-post-meta">
+                            <span class="post-date">${new Date(item.pubDate).toLocaleDateString()}</span>
+                            <span class="post-author">${item.author || data.feed.title || 'Outlaw'}</span>
+                        </div>
+                    </div>
+                `;
+                blogPostsContainer.appendChild(postElement);
+            });
+            initScrollAnimations();
+        } else {
+            console.warn('RSS feed fetched successfully, but no items found or data.status is not "ok":', data);
+            blogPostsContainer.innerHTML = '<p>Could not load blog posts. The RSS feed might be empty or invalid.</p>';
+        }
+    } catch (error) {
+        console.error('Error fetching RSS feed:', error);
+        blogPostsContainer.innerHTML = '<p>Failed to load blog posts. Please try again later or check the RSS feed URL.</p>';
+    }
 }
 
 // ===== PERFORMANCE OPTIMIZATIONS =====
 function initPerformanceOptimizations() {
-  // Lazy load images when they come into view
   const images = document.querySelectorAll('img[data-src]');
   const imageObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -505,7 +564,6 @@ function initPerformanceOptimizations() {
 
   images.forEach(img => imageObserver.observe(img));
 
-  // Preload critical resources
   const criticalResources = [
     'https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap'
   ];
@@ -521,7 +579,6 @@ function initPerformanceOptimizations() {
 
 // ===== ACCESSIBILITY ENHANCEMENTS =====
 function initAccessibility() {
-  // Add keyboard navigation for video cards
   const videoCards = document.querySelectorAll('.video-card');
   videoCards.forEach(card => {
     card.setAttribute('tabindex', '0');
@@ -531,16 +588,14 @@ function initAccessibility() {
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        // Check if there's a play-btn or if the card itself triggers the video
-        const playTrigger = card.querySelector('.play-btn') || card; // Prefer play-btn, else the card itself
+        const playTrigger = card.querySelector('.play-btn') || card;
         if (playTrigger) {
-            playTrigger.click(); // Simulate a click on the play trigger
+            playTrigger.click();
         }
       }
     });
   });
 
-  // Add focus indicators for better keyboard navigation
   const focusableElements = document.querySelectorAll('a, button, input, textarea, select, [tabindex]');
   focusableElements.forEach(element => {
     element.addEventListener('focus', () => {
@@ -557,7 +612,6 @@ function initAccessibility() {
 
 // ===== EASTER EGGS =====
 function initEasterEggs() {
-  // Konami code easter egg
   let konamiCode = [];
   const konamiSequence = [
     'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
@@ -579,7 +633,6 @@ function initEasterEggs() {
 }
 
 function triggerEasterEgg() {
-  // Add special styling to the hero title
   const heroTitle = document.querySelector('.hero-title');
   if (heroTitle) {
     heroTitle.style.animation = 'none';
@@ -589,7 +642,6 @@ function triggerEasterEgg() {
     heroTitle.style.webkitTextFillColor = 'transparent';
     heroTitle.style.animation = 'gradientShift 2s ease infinite, glow 1s ease-in-out infinite alternate';
 
-    // Show a fun message
     const message = document.createElement('div');
     message.innerHTML = '🏍️ RIDE ON, OUTLAW! 🏍️';
     message.style.cssText = `
@@ -597,15 +649,15 @@ function triggerEasterEgg() {
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: var(--color-accent-orange);
-      color: var(--color-text-primary);
-      padding: var(--spacing-md);
+      background: #d4af37;
+      color: #fff;
+      padding: 1rem;
       border-radius: 8px;
-      font-family: var(--font-primary);
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 2rem;
       z-index: 10000;
       animation: fadeInUp 0.5s ease;
-      box-shadow: var(--shadow-heavy);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     `;
 
     document.body.appendChild(message);
@@ -622,30 +674,25 @@ function triggerEasterEgg() {
 
 // ===== INITIALIZATION =====
 function init() {
-  // Wait for DOM to be fully loaded
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
     return;
   }
 
-  // Initialize all functionality
   initMobileNav();
   initSmoothScrolling();
-  initScrollAnimations();
   initHeaderScrollEffect();
   initActiveNavigation();
   initVideoInteractions();
   initContactForm();
-  initBlogSection();
+  fetchRssFeed(); // Call this function to load the real blog posts
   initPerformanceOptimizations();
   initAccessibility();
   initEasterEggs();
 
-  // Add loaded class to body for CSS animations
   document.body.classList.add('loaded');
 }
 
-// Start initialization
 init();
 
 // ===== UTILITY FUNCTIONS =====
@@ -674,9 +721,8 @@ function throttle(func, limit) {
   };
 }
 
-// Export functions for potential external use
 window.OutlawSite = {
   showVideoModal,
   showFormMessage,
-  loadBlogPosts
+  fetchRssFeed
 };
